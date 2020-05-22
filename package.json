@@ -1,0 +1,18 @@
+{
+  "name": "kollegorna-gdpr-tracking",
+  "description": "A helper for tracking GTM and GA in a GDPR way",
+  "version": "0.0.1",
+  "author": "Kollegorna <hej@kollegorna.se>",
+  "license": "MIT",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "12"
+  },
+  "dependencies": {
+    "universal-cookie": "^4.0.3"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
+}
