@@ -7,7 +7,7 @@ class KollegornaGDPRTracking {
       return null
     }
     // If the tracking is already set don't do anything
-    if (window.GDPRTracking) return null
+    if (window.KollegornaGDPRTracking) return null
 
     // default options
     const defaultOptions = {
