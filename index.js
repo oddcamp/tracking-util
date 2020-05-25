@@ -1,18 +1,18 @@
 import Cookies from "universal-cookie"
 
-class KollegornaGDPRTracking {
+class TrackingUtil {
   constructor(options = {}) {
     // If window is not available don't do anything
     if (typeof window === `undefined`) {
       return null
     }
     // If the tracking is already set don't do anything
-    if (window.KollegornaGDPRTracking) return null
+    if (window.TrackingUtil) return null
 
     // default options
     const defaultOptions = {
       cookie: {
-        name: `cookie-accepted`,
+        name: `tracking-cookie-accepted`,
         options: {
           path: `/`,
           maxAge: 3600 * 24 * 30 * 12, // year
@@ -23,9 +23,6 @@ class KollegornaGDPRTracking {
         gtm: {
           id: ``,
           dataLayer: {},
-        },
-        ga: {
-          id: ``,
         },
       },
     }
@@ -39,24 +36,31 @@ class KollegornaGDPRTracking {
       enableModal: false,
       cookie: new Cookies(),
       trackingAccepted: false,
+      trackingCategories: {
+        performance: false,
+        analytics: false,
+        marketing: false,
+      },
       services: {
         gtm: false,
-        ga: false,
       },
     }
 
     this.checkStatus()
 
-    window.KollegornaGDPRTracking = this
+    window.TrackingUtil = this
   }
 
   /*
    * Set cookie value to the specified cookie and rechecks status
+   *
+   * @value String || Boolean
+   * @categories Object
    */
-  setTrackingAccepted(value) {
+  setTrackingAccepted(value, categories) {
     this.status.cookie.set(
       this.options.cookie.name,
-      value,
+      JSON.stringify({ accepted: value, categories: categories }),
       this.options.cookie.options
     )
 
@@ -70,13 +74,18 @@ class KollegornaGDPRTracking {
    * Will update the status object and inject scripts or the modal
    */
   checkStatus() {
-    const cookie = this.status.cookie.get(this.options.cookie.name)
+    const cookie = JSON.parse(this.status.cookie.get(this.options.cookie.name))
 
-    if (cookie && (cookie === true || cookie === `true`)) {
+    if (cookie && (cookie.accepred === true || cookie.accepred === `true`)) {
       this.status = {
         ...this.status,
         enableModal: false,
         trackingAccepted: true,
+        trackingCategories: {
+          performance: cookie.categories.performance,
+          analytics: cookie.categories.analytics,
+          marketing: cookie.categories.marketing,
+        },
       }
 
       this.injectTrackingScripts()
@@ -90,7 +99,6 @@ class KollegornaGDPRTracking {
       trackingAccepted: false,
       services: {
         gtm: false,
-        ga: false,
       },
     }
 
@@ -115,10 +123,6 @@ class KollegornaGDPRTracking {
       window.dataLayer.push({ event: `pageView` })
     }
 
-    if (this.status.services.ga && window.ga) {
-      window.ga(`send`, `pageview`, window.location.pathname)
-    }
-
     return true
   }
 
@@ -127,7 +131,16 @@ class KollegornaGDPRTracking {
    */
   injectTrackingScripts() {
     this.injectGTMscripts()
-    this.injectGAscripts()
+
+    if (this.status.services.gtm && window.dataLayer) {
+      Object.keys(this.status.trackingCategories).map((category) => {
+        if (this.status.trackingCategories[category]) {
+          return window.dataLayer.push({
+            event: `tracking_category_${category}`,
+          })
+        }
+      })
+    }
 
     this.trackPageView()
   }
@@ -163,43 +176,6 @@ class KollegornaGDPRTracking {
   }
 
   /*
-   * Will inject GA script tag if theres and ga id
-   */
-  injectGAscripts() {
-    if (!this.options.services.ga.id) {
-      return false
-    }
-
-    /* eslint-disable */
-    ;(function (i, s, o, g, r, a, m) {
-      i["GoogleAnalyticsObject"] = r
-      ;(i[r] =
-        i[r] ||
-        function () {
-          ;(i[r].q = i[r].q || []).push(arguments)
-        }),
-        (i[r].l = 1 * new Date())
-      ;(a = s.createElement(o)), (m = s.getElementsByTagName(o)[0])
-      a.async = 1
-      a.src = g
-      m.parentNode.insertBefore(a, m)
-    })(
-      window,
-      document,
-      "script",
-      "https://www.google-analytics.com/analytics.js",
-      "ga"
-    )
-    /* eslint-enable */
-
-    window.ga(`create`, this.options.services.ga.id, `auto`)
-
-    this.status.services.ga = true
-
-    return true
-  }
-
-  /*
    * Will set the status to enable modal
    */
   injectTrackingModal() {
@@ -208,18 +184,21 @@ class KollegornaGDPRTracking {
     return true
   }
 }
-export default KollegornaGDPRTracking
+export default TrackingUtil
 
 /*
  * External helper to check for if a modal should be rendered
  */
 export const modalEnabled = () => {
-  return window.KollegornaGDPRTracking.status.enableModal
+  return window.TrackingUtil.status.enableModal
 }
 
 /*
  * External helper to set cookies
+ *
+ * @value String || Boolean
+ * @categories Object
  */
-export const setTrackingAccepted = (value) => {
-  return window.KollegornaGDPRTracking.setTrackingAccepted(value)
+export const setTrackingAccepted = (value, categories = {}) => {
+  return window.TrackingUtil.setTrackingAccepted(value, categories)
 }
