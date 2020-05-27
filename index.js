@@ -19,6 +19,7 @@ class TrackingUtil {
           secure: false,
         },
       },
+      categories: { performance: false, analytics: false, marketing: false },
       services: {
         gtm: {
           id: ``,
@@ -37,9 +38,7 @@ class TrackingUtil {
       cookie: new Cookies(),
       trackingAccepted: false,
       trackingCategories: {
-        performance: false,
-        analytics: false,
-        marketing: false,
+        ...this.options.categories,
       },
       services: {
         gtm: false,
@@ -60,7 +59,10 @@ class TrackingUtil {
   setTrackingAccepted(value, categories) {
     this.status.cookie.set(
       this.options.cookie.name,
-      JSON.stringify({ accepted: value, categories: categories }),
+      JSON.stringify({
+        accepted: value,
+        categories: { ...this.options.categories, ...categories },
+      }),
       this.options.cookie.options
     )
 
@@ -74,17 +76,23 @@ class TrackingUtil {
    * Will update the status object and inject scripts or the modal
    */
   checkStatus() {
-    const cookie = JSON.parse(this.status.cookie.get(this.options.cookie.name))
+    if (!this.status.cookie.get(this.options.cookie.name)) {
+      this.status = {
+        ...this.status,
+        enableModal: true,
+      }
 
-    if (cookie && (cookie.accepred === true || cookie.accepred === `true`)) {
+      return null
+    }
+    const cookie = this.status.cookie.get(this.options.cookie.name)
+
+    if (cookie && (cookie.accepted === true || cookie.accepted === `true`)) {
       this.status = {
         ...this.status,
         enableModal: false,
         trackingAccepted: true,
         trackingCategories: {
-          performance: cookie.categories.performance,
-          analytics: cookie.categories.analytics,
-          marketing: cookie.categories.marketing,
+          ...cookie.categories,
         },
       }
 
@@ -139,6 +147,8 @@ class TrackingUtil {
             event: `tracking_category_${category}`,
           })
         }
+
+        return null
       })
     }
 
@@ -191,6 +201,13 @@ export default TrackingUtil
  */
 export const modalEnabled = () => {
   return window.TrackingUtil.status.enableModal
+}
+
+/*
+ * External helper to check the tracking categories
+ */
+export const getTrackingCategories = () => {
+  return window.TrackingUtil.trackingCategories
 }
 
 /*
