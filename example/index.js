@@ -12,11 +12,16 @@ const tu = new TrackingUtil({
 
 const responseEl = document.querySelector(`.consent-response`)
 const dialogEl = document.querySelector(`.consent-dialog`)
+const dummyBtnEl = document.querySelector(`.dummy-btn`)
 
 const displayAccepted = () => {
+  dummyBtnEl.removeAttribute(`hidden`)
+
   responseEl.innerHTML = `
     <p>Tracking accepted:</p>
-    <pre>${JSON.stringify(tu.registeredGTMdata())}</pre>
+    <pre style="white-space: pre-line;">
+      ${JSON.stringify(tu.registeredGTMdata())}
+    </pre>
   `
 }
 
@@ -47,3 +52,12 @@ dialogEl
     dialogEl.setAttribute(`hidden`, ``)
     displayDenied()
   })
+
+dummyBtnEl.addEventListener(`click`, () => {
+  tu.registerGTMdata({
+    event: `buttonClick`,
+    eventLabel: dummyBtnEl.innerText,
+  })
+
+  displayAccepted()
+})
