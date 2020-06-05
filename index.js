@@ -6,24 +6,25 @@ class TrackingUtil {
     if (typeof window === `undefined`) {
       return null
     }
+
     // If the tracking is already set don't do anything
     if (window.TrackingUtil) return null
 
-    // default options
+    // Default options
     const defaultOptions = {
       cookie: {
-        name: `tracking-cookie-accepted`,
+        name: `tracking-util-reacted`,
         options: {
           path: `/`,
           maxAge: 3600 * 24 * 30 * 12, // year
           secure: false,
         },
       },
-      categories: { performance: false, analytics: false, marketing: false },
       services: {
         gtm: {
           id: ``,
-          dataLayer: {},
+          dataLayerName: `dataLayer`,
+          defaultDataLayer: [],
         },
       },
     }
@@ -34,102 +35,76 @@ class TrackingUtil {
     }
 
     this.status = {
-      enableModal: false,
-      cookie: new Cookies(),
-      trackingAccepted: false,
-      trackingCategories: {
-        ...this.options.categories,
-      },
-      services: {
-        gtm: false,
-      },
+      userReacted: false,
+      trackingAccepted: null,
     }
 
-    this.checkStatus()
+    this.cookies = new Cookies()
+
+    this.init()
 
     window.TrackingUtil = this
   }
 
   /*
-   * Set cookie value to the specified cookie and rechecks status
-   *
-   * @value String || Boolean
-   * @categories Object
+   * Init scripts if tracking's accepted
    */
-  setTrackingAccepted(value, categories) {
-    this.status.cookie.set(
-      this.options.cookie.name,
-      JSON.stringify({
-        accepted: value,
-        categories: { ...this.options.categories, ...categories },
-      }),
-      this.options.cookie.options
-    )
+  init() {
+    const cookie = this.cookies.get(this.options.cookie.name)
 
-    this.checkStatus()
-
-    return true
-  }
-
-  /*
-   * Check the status if tracking is allowed or not
-   * Will update the status object and inject scripts or the modal
-   */
-  checkStatus() {
-    if (!this.status.cookie.get(this.options.cookie.name)) {
+    if (!cookie) {
       this.status = {
         ...this.status,
-        enableModal: true,
+        userReacted: false,
       }
-
       return null
     }
-    const cookie = this.status.cookie.get(this.options.cookie.name)
 
-    if (cookie && (cookie.accepted === true || cookie.accepted === `true`)) {
+    if (cookie.accepted === true || cookie.accepted === `true`) {
       this.status = {
         ...this.status,
-        enableModal: false,
+        userReacted: true,
         trackingAccepted: true,
-        trackingCategories: {
-          ...cookie.categories,
-        },
       }
-
       this.injectTrackingScripts()
-
       return true
     }
 
     this.status = {
       ...this.status,
-      enableModal: false,
+      userReacted: true,
       trackingAccepted: false,
-      services: {
-        gtm: false,
-      },
     }
-
-    if (
-      typeof this.status.cookie.get(this.options.cookie.name) === `undefined`
-    ) {
-      this.injectTrackingModal()
-    }
-
     return false
   }
 
   /*
-   *  Will track a page view on the accepted services
+   * Checks if user has made a decision to allow or deny tracking
    */
-  trackPageView() {
-    if (!this.status.trackingAccepted) {
-      return false
-    }
+  userReacted() {
+    return this.status.userReacted
+  }
 
-    if (this.status.services.gtm && window.dataLayer) {
-      window.dataLayer.push({ event: `pageView` })
-    }
+  /*
+   * Checks if tracking has been accepted by user
+   */
+  trackingAccepted() {
+    return this.status.trackingAccepted
+  }
+
+  /*
+   * Sets tracking decision and starts tracking if accepted
+   *
+   * @value Boolean
+   */
+  setTrackingAccepted(value) {
+    this.cookies.set(
+      this.options.cookie.name,
+      { accepted: value },
+      this.options.cookie.options
+    )
+
+    this.init()
 
     return true
   }
@@ -139,29 +114,25 @@ class TrackingUtil {
    */
   injectTrackingScripts() {
     this.injectGTMscripts()
-
-    if (this.status.services.gtm && window.dataLayer) {
-      Object.keys(this.status.trackingCategories).map((category) => {
-        if (this.status.trackingCategories[category]) {
-          return window.dataLayer.push({
-            event: `tracking_category_${category}`,
-          })
-        }
-
-        return null
-      })
-    }
-
-    this.trackPageView()
   }
 
   /*
-   * Will inject GTM script tag if theres and gtm id
+   * Checks if enough options provided to perform GTM tracking
+   */
+  isGTMtrackable() {
+    const { gtm } = this.options.services
+    return gtm && gtm.id && gtm.dataLayerName
+  }
+
+  /*
+   * Inject GTM scripts
    */
   injectGTMscripts() {
-    if (!this.options.services.gtm.id) {
+    if (!this.isGTMtrackable()) {
       return false
     }
+
+    const { gtm } = this.options.services
 
     /* eslint-disable */
     ;(function (w, d, s, l, i) {
@@ -173,49 +144,73 @@ class TrackingUtil {
       j.async = true
       j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl
       f.parentNode.insertBefore(j, f)
-    })(window, document, "script", "dataLayer", this.options.services.gtm.id)
+    })(window, document, "script", gtm.dataLayerName, gtm.id)
     /* eslint-enable */
 
-    if (Object.keys(this.options.services.gtm.dataLayer).length !== 0) {
-      window.dataLayer.push(this.options.services.gtm.dataLayer)
+    if (Array.isArray(gtm.defaultDataLayer)) {
+      gtm.defaultDataLayer.forEach((dl) => this.registerGTMdata(dl))
     }
-
-    this.status.services.gtm = true
 
     return true
   }
 
   /*
-   * Will set the status to enable modal
+   * Register GTM data
+   *
+   * @data Object
    */
-  injectTrackingModal() {
-    this.status.enableModal = true
+  registerGTMdata(data) {
+    if (!this.isGTMtrackable() || typeof data !== `object`) {
+      return false
+    }
+
+    const { dataLayerName } = this.options.services.gtm
+    if (typeof window[dataLayerName] === `undefined`) {
+      window[dataLayerName] = []
+    }
+    window[dataLayerName].push(data)
 
     return true
   }
+
+  /*
+   * Get registered GTM data
+   */
+  registeredGTMdata() {
+    if (!this.isGTMtrackable()) {
+      return false
+    }
+
+    const { dataLayerName } = this.options.services.gtm
+    return window[dataLayerName] || []
+  }
 }
+
 export default TrackingUtil
 
-/*
- * External helper to check for if a modal should be rendered
- */
-export const modalEnabled = () => {
-  return window.TrackingUtil.status.enableModal
+// External helpers
+
+export const userReacted = () => {
+  if (typeof window === `undefined`) return null
+  return window.TrackingUtil.userReacted()
 }
 
-/*
- * External helper to check the tracking categories
- */
-export const getTrackingCategories = () => {
-  return window.TrackingUtil.trackingCategories
+export const trackingAccepted = () => {
+  if (typeof window === `undefined`) return null
+  return window.TrackingUtil.trackingAccepted()
 }
 
-/*
- * External helper to set cookies
- *
- * @value String || Boolean
- * @categories Object
- */
-export const setTrackingAccepted = (value, categories = {}) => {
-  return window.TrackingUtil.setTrackingAccepted(value, categories)
+export const setTrackingAccepted = (value) => {
+  if (typeof window === `undefined`) return null
+  return window.TrackingUtil.setTrackingAccepted(value)
+}
+
+export const registerGTMdata = (data) => {
+  if (typeof window === `undefined`) return null
+  return window.TrackingUtil.registerGTMdata(data)
+}
+
+export const registeredGTMdata = (name) => {
+  if (typeof window === `undefined`) return null
+  return window.TrackingUtil.registeredGTMdata()
 }
