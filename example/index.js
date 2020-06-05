@@ -5,7 +5,6 @@ const tu = new TrackingUtil({
     gtm: {
       id: `GTM-XXXX`,
       dataLayerName: `dataLayer`,
-      defaultDataLayer: [{ pageTitle: `Home` }, { event: `pageView` }],
     },
   },
 })
@@ -39,7 +38,19 @@ if (!tu.userReacted()) {
 dialogEl
   .querySelector(`button[data-type="accept"]`)
   .addEventListener(`click`, () => {
-    tu.setTrackingAccepted(true)
+    const defaultGTMdataLayer = [{ pageTitle: `Home` }, { event: `pageView` }]
+
+    if (dialogEl.querySelector(`input[name="performance"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:performance` })
+
+    if (dialogEl.querySelector(`input[name="marketing"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:marketing` })
+
+    if (dialogEl.querySelector(`input[name="analytics"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:analytics` })
+
+    tu.setTrackingAccepted(true, { defaultGTMdataLayer })
+
     dialogEl.setAttribute(`hidden`, ``)
     displayAccepted()
   })
@@ -56,6 +67,7 @@ dialogEl
 dummyBtnEl.addEventListener(`click`, () => {
   tu.registerGTMdata({
     event: `buttonClick`,
+    eventCategory: `Homepage`,
     eventLabel: dummyBtnEl.innerText,
   })
 

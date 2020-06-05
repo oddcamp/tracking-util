@@ -16,7 +16,7 @@ class TrackingUtil {
         name: `tracking-util-reacted`,
         options: {
           path: `/`,
-          maxAge: 3600 * 24 * 30 * 12, // year
+          maxAge: 3600 * 24 * 365, // year
           secure: false,
         },
       },
@@ -24,7 +24,6 @@ class TrackingUtil {
         gtm: {
           id: ``,
           dataLayerName: `dataLayer`,
-          defaultDataLayer: [],
         },
       },
     }
@@ -37,6 +36,7 @@ class TrackingUtil {
     this.status = {
       userReacted: false,
       trackingAccepted: null,
+      defaultGTMdataLayer: [],
     }
 
     this.cookies = new Cookies()
@@ -65,6 +65,7 @@ class TrackingUtil {
         ...this.status,
         userReacted: true,
         trackingAccepted: true,
+        defaultGTMdataLayer: cookie.defaultGTMdataLayer,
       }
       this.injectTrackingScripts()
       return true
@@ -96,11 +97,18 @@ class TrackingUtil {
    * Sets tracking decision and starts tracking if accepted
    *
    * @value Boolean
+   * @options Object
+   *   @defaultGTMdataLayer Array
    */
-  setTrackingAccepted(value) {
+  setTrackingAccepted(value, options = {}) {
+    const { defaultGTMdataLayer = [] } = options
+
     this.cookies.set(
       this.options.cookie.name,
-      { accepted: value },
+      {
+        accepted: value,
+        defaultGTMdataLayer,
+      },
       this.options.cookie.options
     )
 
@@ -133,6 +141,7 @@ class TrackingUtil {
     }
 
     const { gtm } = this.options.services
+    const { defaultGTMdataLayer } = this.status
 
     /* eslint-disable */
     ;(function (w, d, s, l, i) {
@@ -147,8 +156,8 @@ class TrackingUtil {
     })(window, document, "script", gtm.dataLayerName, gtm.id)
     /* eslint-enable */
 
-    if (Array.isArray(gtm.defaultDataLayer)) {
-      gtm.defaultDataLayer.forEach((dl) => this.registerGTMdata(dl))
+    if (Array.isArray(defaultGTMdataLayer)) {
+      defaultGTMdataLayer.forEach((dl) => this.registerGTMdata(dl))
     }
 
     return true
@@ -190,27 +199,27 @@ export default TrackingUtil
 
 // External helpers
 
-export const userReacted = () => {
+export const userReacted = (...args) => {
   if (typeof window === `undefined`) return null
-  return window.TrackingUtil.userReacted()
+  return window.TrackingUtil.userReacted(...args)
 }
 
-export const trackingAccepted = () => {
+export const trackingAccepted = (...args) => {
   if (typeof window === `undefined`) return null
-  return window.TrackingUtil.trackingAccepted()
+  return window.TrackingUtil.trackingAccepted(...args)
 }
 
-export const setTrackingAccepted = (value) => {
+export const setTrackingAccepted = (...args) => {
   if (typeof window === `undefined`) return null
-  return window.TrackingUtil.setTrackingAccepted(value)
+  return window.TrackingUtil.setTrackingAccepted(...args)
 }
 
-export const registerGTMdata = (data) => {
+export const registerGTMdata = (...args) => {
   if (typeof window === `undefined`) return null
-  return window.TrackingUtil.registerGTMdata(data)
+  return window.TrackingUtil.registerGTMdata(...args)
 }
 
-export const registeredGTMdata = (name) => {
+export const registeredGTMdata = (...args) => {
   if (typeof window === `undefined`) return null
-  return window.TrackingUtil.registeredGTMdata()
+  return window.TrackingUtil.registeredGTMdata(...args)
 }

@@ -19,10 +19,6 @@ const tu = new TrackingUtil({
     gtm: {
       id: `GTM-XXXX`,
       dataLayerName: `dataLayer`,
-      defaultDataLayer: [
-        { pageTitle: `Home` },
-        { event: `pageView` },
-      ],
     },
   },
 })
@@ -67,15 +63,6 @@ document
 
       /* Data layer name. Usually it's `dataLayer` */
       dataLayerName: `dataLayer`,
-
-      /*
-        Default data, registered on every page visit, e.g.:
-        [
-          { pageTitle: `Home` },
-          { event: `pageView` },
-        ]
-      */
-      defaultDataLayer: [],
     },
   },
 }
@@ -113,10 +100,12 @@ setTrackingAccepted(value)
 * Registers GTM data
 *
 * @data Object
+* @options Object
+*   @defaultGTMdataLayer Array
 */
-registerGTMdata(data)
+registerGTMdata(data, options = {})
 
-// e.g.: addGTMdata({ event: `click` })
+// e.g.: registerGTMdata({ event: `click` })
 ```
 
 ```js
@@ -129,7 +118,7 @@ registeredGTMdata()
 All the methods above are available as external imports, e.g.:
 
 ```js
-import { setTrackingAccepted } from "@kollegorna/tracking-util"
+import { registeredGTMdata } from "@kollegorna/tracking-util"
 
 console.log(registeredGTMdata)
 ```
