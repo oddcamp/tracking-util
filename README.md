@@ -2,14 +2,13 @@
 
 GDPR compiliant tracking.
 
-## Currently supported services
+## Supported services
 
 - Google Tag Manager
 
 ## Example code
 
 ```js
-
 import TrackingUtil from "@kollegorna/tracking-util"
 
 // automatically inserts scripts and starts tracking if tracking has been
@@ -31,12 +30,23 @@ if (tu.userReacted()) {
 // sets tracking accepted on button click
 document
   .querySelector(`.consent-dialog button[data-type="accept"]`)
-  .addEventListener(`click`, () => tu.setTrackingAccepted(true))
+  .addEventListener(`click`, () => 
+    tu.setTrackingAccepted(true, [{ event: `pageView` }])
+  )
 
 // sets tracking denied on button click
 document
   .querySelector(`.consent-dialog button[data-type="deny"]`)
   .addEventListener(`click`, () => tu.setTrackingAccepted(false))
+```
+
+Once `TrackingUtil` instance is created it also becomes accessible via
+`window.trackingUtil`, e.g.:
+
+```js
+if (typeof window.trackingUtil !== `undefined`) {
+  console.log(window.trackingUtil.trackingAccepted())
+}
 ```
 
 ## Default options
@@ -89,10 +99,12 @@ trackingAccepted()
 * Sets tracking decision and starts tracking if accepted
 *
 * @value Boolean
+* @options Object
+*   @defaultGTMdataLayer Array
 */
-setTrackingAccepted(value)
+setTrackingAccepted(value, options = {})
 
-// e.g.: setTrackingAccepted(true)
+// e.g.: setTrackingAccepted(true, [{ pageTitle: `Home` }, { event: `pageView` }])
 ```
 
 ```js
@@ -100,10 +112,8 @@ setTrackingAccepted(value)
 * Registers GTM data
 *
 * @data Object
-* @options Object
-*   @defaultGTMdataLayer Array
 */
-registerGTMdata(data, options = {})
+registerGTMdata(data)
 
 // e.g.: registerGTMdata({ event: `click` })
 ```
@@ -113,14 +123,6 @@ registerGTMdata(data, options = {})
 * Get registered GTM data
 */
 registeredGTMdata()
-```
-
-All the methods above are available as external imports, e.g.:
-
-```js
-import { registeredGTMdata } from "@kollegorna/tracking-util"
-
-console.log(registeredGTMdata)
 ```
 
 ## Local development and testing

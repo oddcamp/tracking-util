@@ -2,13 +2,13 @@ import Cookies from "universal-cookie"
 
 class TrackingUtil {
   constructor(options = {}) {
-    // If window is not available don't do anything
+    // If `window` is not available don't do anything
     if (typeof window === `undefined`) {
       return null
     }
 
     // If the tracking is already set don't do anything
-    if (window.TrackingUtil) return null
+    if (window.trackingUtil) return null
 
     // Default options
     const defaultOptions = {
@@ -43,7 +43,7 @@ class TrackingUtil {
 
     this.init()
 
-    window.TrackingUtil = this
+    window.trackingUtil = this
   }
 
   /*
@@ -196,30 +196,3 @@ class TrackingUtil {
 }
 
 export default TrackingUtil
-
-// External helpers
-
-export const userReacted = (...args) => {
-  if (typeof window === `undefined`) return null
-  return window.TrackingUtil.userReacted(...args)
-}
-
-export const trackingAccepted = (...args) => {
-  if (typeof window === `undefined`) return null
-  return window.TrackingUtil.trackingAccepted(...args)
-}
-
-export const setTrackingAccepted = (...args) => {
-  if (typeof window === `undefined`) return null
-  return window.TrackingUtil.setTrackingAccepted(...args)
-}
-
-export const registerGTMdata = (...args) => {
-  if (typeof window === `undefined`) return null
-  return window.TrackingUtil.registerGTMdata(...args)
-}
-
-export const registeredGTMdata = (...args) => {
-  if (typeof window === `undefined`) return null
-  return window.TrackingUtil.registeredGTMdata(...args)
-}
