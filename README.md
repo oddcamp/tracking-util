@@ -128,3 +128,9 @@ registeredGTMdata()
 ## Local development and testing
 
 `$ yarn dev` or `$ yarn build`
+
+## TODO
+
+- [ ] Implement async callback functions, e.g.: `initCb()`.
+- [ ] Support multiple trackers
+- [ ] Support Google Analytics
