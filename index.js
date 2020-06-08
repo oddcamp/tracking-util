@@ -1,4 +1,5 @@
 import Cookies from "universal-cookie"
+import merge from "lodash/merge"
 
 class TrackingUtil {
   constructor(options = {}) {
@@ -11,7 +12,7 @@ class TrackingUtil {
     if (window.trackingUtil) return null
 
     // Default options
-    const defaultOptions = {
+    this.options = {
       cookie: {
         name: `tracking-util-reacted`,
         options: {
@@ -28,10 +29,7 @@ class TrackingUtil {
       },
     }
 
-    this.options = {
-      ...defaultOptions,
-      ...options,
-    }
+    merge(this.options, options)
 
     this.status = {
       userReacted: false,

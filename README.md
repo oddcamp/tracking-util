@@ -17,7 +17,6 @@ const tu = new TrackingUtil({
   services: {
     gtm: {
       id: `GTM-XXXX`,
-      dataLayerName: `dataLayer`,
     },
   },
 })
