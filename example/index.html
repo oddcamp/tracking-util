@@ -1,0 +1,24 @@
+<html>
+<body>
+  <div class="consent-dialog" hidden>
+    <p>Do you wanna get tracked?</p>
+
+    <p>
+      <label><input type="checkbox" name="performance" /> Performance</label>
+      <label><input type="checkbox" name="marketing" /> Marketing</label>
+      <label><input type="checkbox" name="analytics" /> Analytics</label>
+    </p>
+
+    <p>
+      <button type="button" data-type="accept">Accept</button>
+      <button type="button" data-type="deny">Deny</button>
+    </p>
+  </div>
+
+  <div class="consent-response"></div>
+
+  <button type="button" class="dummy-btn" hidden>Trackable dummy button</button>
+
+  <script src="./index.js"></script>
+</body>
+</html>
