@@ -1,7 +1,7 @@
 {
   "name": "@kollegorna/tracking-util",
   "description": "A helper for tracking GTM and GA in a GDPR way",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": "Kollegorna <hej@kollegorna.se>",
   "license": "MIT",
   "private": true,
