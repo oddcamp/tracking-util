@@ -107,6 +107,8 @@ setTrackingAccepted(value, options = {})
 // e.g.: setTrackingAccepted(true, [{ pageTitle: `Home` }, { event: `pageView` }])
 ```
 
+Is tracking was accepted by user the `defaultGTMdataLayer` is saved in a cookie (Options → `cookie.name`) and the data is automatically injected in GTM's data layer every time `TrackingUtil` instance is created. Therefore it's useful for tracking page views and storing other default information. Check out `/example` for demo.
+
 ```js
 /*
 * Registers GTM data
