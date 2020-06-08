@@ -1,6 +1,6 @@
 # Kollegorna Tracking Utility
 
-GDPR compiliant tracking.
+GDPR compliant tracking.
 
 ## Supported services
 
