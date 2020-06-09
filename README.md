@@ -39,7 +39,7 @@ document
         { pageTitle: `Home` },
         { event: `pageView` },
       ],
-      defaultGAdata: [
+      defaultGAcommands: [
         [`set`, `anonymizeIp`, true],
         [`send`, `pageview`],
       ],
@@ -64,7 +64,7 @@ document.querySelector(`a.logo`).addEventListener(`click`, () => {
       eventLabel: `Logo`,
     })
 
-    window.trackingUtil.registerGAdata([
+    window.trackingUtil.runGAcommand([
       `send`,
       `event`,
       {
@@ -157,11 +157,11 @@ trackingAccepted()
 * @param {bool} value `true` if accepted, `false` if denied
 * @param {object} options 
 *   @param defaultGTMdataLayer {array} Default GTM data layer
-*   @param defaultGAdata {array} Default GA data
+*   @param defaultGAcommands {array} Default GA data
 */
 setTrackingAccepted(value, options = {})
 ```
-If tracking was accepted by user the `defaultGTMdataLayer/defaultGAdata` are 
+If tracking was accepted by user the `defaultGTMdataLayer/defaultGAcommands` are 
 saved in a cookie (Options → `cookie.name`) and the data is automatically 
 injected in GTM's data layer every time `TrackingUtil` instance is created. 
 Therefore it's useful for tracking page views and storing other default 
@@ -196,9 +196,9 @@ registeredGTMdata()
 *
 * @param {array} data
 */
-registerGAdata(data)
+runGAcommand(data)
 
-// e.g.: registerGAdata([`send`, `event`, `click`, `download-me`, { transport: `beacon` }])
+// e.g.: runGAcommand([`send`, `event`, `click`, `download-me`, { transport: `beacon` }])
 
 // All options available at
 //   https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#general
