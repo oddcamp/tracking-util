@@ -1,7 +1,7 @@
 {
   "name": "@kollegorna/tracking-util",
   "description": "GDPR compliant tracking",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Kollegorna <hej@kollegorna.se>",
   "license": "MIT",
   "private": false,
