@@ -51,12 +51,12 @@ dialogEl
     if (dialogEl.querySelector(`input[name="analytics"]`).checked)
       defaultGTMdataLayer.push({ event: `trackingCategory:analytics` })
 
-    const defaultGAdata = [
+    const defaultGAcommands = [
       [`set`, `anonymizeIp`, true],
       [`send`, `pageview`],
     ]
 
-    tu.setTrackingAccepted(true, { defaultGTMdataLayer, defaultGAdata })
+    tu.setTrackingAccepted(true, { defaultGTMdataLayer, defaultGAcommands })
 
     dialogEl.setAttribute(`hidden`, ``)
     displayAccepted()
@@ -78,7 +78,7 @@ dummyBtnEl.addEventListener(`click`, () => {
     eventLabel: dummyBtnEl.innerText,
   })
 
-  tu.registerGAdata([
+  tu.runGAcommand([
     `send`,
     `event`,
     {

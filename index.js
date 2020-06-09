@@ -40,7 +40,7 @@ class TrackingUtil {
       userReacted: false,
       trackingAccepted: null,
       defaultGTMdataLayer: [],
-      defaultGAdata: [],
+      defaultGAcommands: [],
     }
 
     this.cookies = new Cookies()
@@ -70,7 +70,7 @@ class TrackingUtil {
         userReacted: true,
         trackingAccepted: true,
         defaultGTMdataLayer: cookie.defaultGTMdataLayer,
-        defaultGAdata: cookie.defaultGAdata,
+        defaultGAcommands: cookie.defaultGAcommands,
       }
       this.initTrackers()
       return true
@@ -104,17 +104,17 @@ class TrackingUtil {
    * @param {bool} value `true` if accepted, `false` if denied
    * @param {object} options
    *   @param defaultGTMdataLayer {array} Default GTM data layer
-   *   @param defaultGAdata {array} Default GA data
+   *   @param defaultGAcommands {array} Default GA data
    */
   setTrackingAccepted(value, options = {}) {
-    const { defaultGTMdataLayer = [], defaultGAdata = [] } = options
+    const { defaultGTMdataLayer = [], defaultGAcommands = [] } = options
 
     this.cookies.set(
       this.options.cookie.name,
       {
         accepted: value,
         defaultGTMdataLayer,
-        defaultGAdata,
+        defaultGAcommands,
       },
       this.options.cookie.options
     )
@@ -224,7 +224,7 @@ class TrackingUtil {
     }
 
     const { ga } = this.options.services
-    const { defaultGAdata } = this.status
+    const { defaultGAcommands } = this.status
 
     /* eslint-disable */
     ;(function (i, s, o, g, r, a, m) {
@@ -250,19 +250,19 @@ class TrackingUtil {
 
     window[ga.commandQueue](`create`, ga.id, ga.createFields)
 
-    if (Array.isArray(defaultGAdata)) {
-      defaultGAdata.forEach((d) => this.registerGAdata(d))
+    if (Array.isArray(defaultGAcommands)) {
+      defaultGAcommands.forEach((d) => this.runGAcommand(d))
     }
 
     return true
   }
 
   /*
-   * Registers GA data
+   * Runs GA command
    *
    * @param {array} data
    */
-  registerGAdata(data) {
+  runGAcommand(data) {
     const { commandQueue } = this.options.services.ga
 
     if (
