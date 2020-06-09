@@ -26,6 +26,11 @@ class TrackingUtil {
           id: ``,
           dataLayerName: `dataLayer`,
         },
+        ga: {
+          id: ``,
+          commandQueue: `ga`,
+          createFields: {},
+        },
       },
     }
 
@@ -35,6 +40,7 @@ class TrackingUtil {
       userReacted: false,
       trackingAccepted: null,
       defaultGTMdataLayer: [],
+      defaultGAdata: [],
     }
 
     this.cookies = new Cookies()
@@ -64,8 +70,9 @@ class TrackingUtil {
         userReacted: true,
         trackingAccepted: true,
         defaultGTMdataLayer: cookie.defaultGTMdataLayer,
+        defaultGAdata: cookie.defaultGAdata,
       }
-      this.injectTrackingScripts()
+      this.initTrackers()
       return true
     }
 
@@ -94,18 +101,20 @@ class TrackingUtil {
   /*
    * Sets tracking decision and starts tracking if accepted
    *
-   * @value Boolean
-   * @options Object
-   *   @defaultGTMdataLayer Array
+   * @param {bool} value `true` if accepted, `false` if denied
+   * @param {object} options
+   *   @param defaultGTMdataLayer {array} Default GTM data layer
+   *   @param defaultGAdata {array} Default GA data
    */
   setTrackingAccepted(value, options = {}) {
-    const { defaultGTMdataLayer = [] } = options
+    const { defaultGTMdataLayer = [], defaultGAdata = [] } = options
 
     this.cookies.set(
       this.options.cookie.name,
       {
         accepted: value,
         defaultGTMdataLayer,
+        defaultGAdata,
       },
       this.options.cookie.options
     )
@@ -116,10 +125,11 @@ class TrackingUtil {
   }
 
   /*
-   * Will try inject all script tags and then track a page view
+   * Initiates tracking
    */
-  injectTrackingScripts() {
-    this.injectGTMscripts()
+  initTrackers() {
+    this.initGTM()
+    this.initGA()
   }
 
   /*
@@ -131,10 +141,10 @@ class TrackingUtil {
   }
 
   /*
-   * Inject GTM scripts
+   * Initiates GTM tracking
    */
-  injectGTMscripts() {
-    if (!this.isGTMtrackable()) {
+  initGTM() {
+    if (!this.isGTMtrackable() || !this.trackingAccepted()) {
       return false
     }
 
@@ -162,26 +172,31 @@ class TrackingUtil {
   }
 
   /*
-   * Register GTM data
+   * Registers GTM data
    *
-   * @data Object
+   * @param {object} data
+   * @returns {bool} `true` on success and `false` on failure
    */
   registerGTMdata(data) {
-    if (!this.isGTMtrackable() || typeof data !== `object`) {
+    const { dataLayerName } = this.options.services.gtm
+
+    if (
+      !this.isGTMtrackable() ||
+      !this.trackingAccepted() ||
+      typeof data !== `object` ||
+      typeof window[dataLayerName] !== `object`
+    ) {
       return false
     }
 
-    const { dataLayerName } = this.options.services.gtm
-    if (typeof window[dataLayerName] === `undefined`) {
-      window[dataLayerName] = []
-    }
     window[dataLayerName].push(data)
 
     return true
   }
 
   /*
-   * Get registered GTM data
+   * Gets registered GTM data
+   * @returns {array}
    */
   registeredGTMdata() {
     if (!this.isGTMtrackable()) {
@@ -190,6 +205,78 @@ class TrackingUtil {
 
     const { dataLayerName } = this.options.services.gtm
     return window[dataLayerName] || []
+  }
+
+  /*
+   * Checks if enough options provided to perform GA tracking
+   */
+  isGAtrackable() {
+    const { ga } = this.options.services
+    return ga && ga.id && ga.commandQueue
+  }
+
+  /*
+   * Initiates GA tracking
+   */
+  initGA() {
+    if (!this.isGAtrackable() || !this.trackingAccepted()) {
+      return false
+    }
+
+    const { ga } = this.options.services
+    const { defaultGAdata } = this.status
+
+    /* eslint-disable */
+    ;(function (i, s, o, g, r, a, m) {
+      i[`GoogleAnalyticsObject`] = r
+      ;(i[r] =
+        i[r] ||
+        function () {
+          ;(i[r].q = i[r].q || []).push(arguments)
+        }),
+        (i[r].l = 1 * new Date())
+      ;(a = s.createElement(o)), (m = s.getElementsByTagName(o)[0])
+      a.async = 1
+      a.src = g
+      m.parentNode.insertBefore(a, m)
+    })(
+      window,
+      document,
+      `script`,
+      `https://www.google-analytics.com/analytics.js`,
+      ga.commandQueue
+    )
+    /* eslint-enable */
+
+    window[ga.commandQueue](`create`, ga.id, ga.createFields)
+
+    if (Array.isArray(defaultGAdata)) {
+      defaultGAdata.forEach((d) => this.registerGAdata(d))
+    }
+
+    return true
+  }
+
+  /*
+   * Registers GA data
+   *
+   * @param {array} data
+   */
+  registerGAdata(data) {
+    const { commandQueue } = this.options.services.ga
+
+    if (
+      !this.isGAtrackable() ||
+      !this.trackingAccepted() ||
+      !Array.isArray(data) ||
+      typeof window[commandQueue] !== `function`
+    ) {
+      return false
+    }
+
+    window[commandQueue](...data)
+
+    return true
   }
 }
 
