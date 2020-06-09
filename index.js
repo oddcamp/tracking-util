@@ -101,10 +101,10 @@ class TrackingUtil {
   /*
    * Sets tracking decision and starts tracking if accepted
    *
-   * @value Boolean
-   * @options Object
-   *   @defaultGTMdataLayer Array
-   *   @defaultGAdata Array
+   * @param {bool} value `true` if accepted, `false` if denied
+   * @param {object} options
+   *   @param defaultGTMdataLayer {array} Default GTM data layer
+   *   @param defaultGAdata {array} Default GA data
    */
   setTrackingAccepted(value, options = {}) {
     const { defaultGTMdataLayer = [], defaultGAdata = [] } = options
@@ -174,7 +174,8 @@ class TrackingUtil {
   /*
    * Registers GTM data
    *
-   * @data Object
+   * @param {object} data
+   * @returns {bool} `true` on success and `false` on failure
    */
   registerGTMdata(data) {
     const { dataLayerName } = this.options.services.gtm
@@ -195,6 +196,7 @@ class TrackingUtil {
 
   /*
    * Gets registered GTM data
+   * @returns {array}
    */
   registeredGTMdata() {
     if (!this.isGTMtrackable()) {
@@ -258,7 +260,7 @@ class TrackingUtil {
   /*
    * Registers GA data
    *
-   * @data Array
+   * @param {array} data
    */
   registerGAdata(data) {
     const { commandQueue } = this.options.services.ga

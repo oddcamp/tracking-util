@@ -137,6 +137,7 @@ document.querySelector(`a.logo`).addEventListener(`click`, () => {
 ```js
 /*
 * Checks if user has made a decision to allow or deny tracking
+* @returns {bool}
 */
 userReacted()
 ```
@@ -144,6 +145,7 @@ userReacted()
 ```js
 /*
 * Checks if tracking has been accepted by user
+* @returns {bool}
 */
 trackingAccepted()
 ```
@@ -152,14 +154,13 @@ trackingAccepted()
 /*
 * Sets tracking decision and starts tracking if accepted
 *
-* @value Boolean
-* @options Object
-*   @defaultGTMdataLayer Array
-*   @defaultGAdata Array
+* @param {bool} value `true` if accepted, `false` if denied
+* @param {object} options 
+*   @param defaultGTMdataLayer {array} Default GTM data layer
+*   @param defaultGAdata {array} Default GA data
 */
 setTrackingAccepted(value, options = {})
 ```
-
 If tracking was accepted by user the `defaultGTMdataLayer/defaultGAdata` are 
 saved in a cookie (Options → `cookie.name`) and the data is automatically 
 injected in GTM's data layer every time `TrackingUtil` instance is created. 
@@ -171,30 +172,38 @@ information. Check out `/example` for demo.
 /*
 * Registers GTM data
 *
-* @data Object
+* @param {object} data
+* @returns {bool} `true` on success and `false` on failure
 */
 registerGTMdata(data)
 
 // e.g.: registerGTMdata({ event: `click` })
 ```
+Doesn't do anything if tracking hasn't been accepted by user.
+
 ---
 ```js
 /*
 * Gets registered GTM data
+* @returns {array}
 */
 registeredGTMdata()
 ```
 ---
 ```js
 /*
-  * Registers GA data
-  *
-  * @data Array
-  */
+* Registers GA data
+*
+* @param {array} data
+*/
 registerGAdata(data)
 
 // e.g.: registerGAdata([`send`, `event`, `click`, `download-me`, { transport: `beacon` }])
+
+// All options available at
+//   https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#general
 ```
+Doesn't do anything if tracking hasn't been accepted by user.
 
 ## Local development and testing
 
