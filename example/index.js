@@ -5,6 +5,9 @@ const tu = new TrackingUtil({
     gtm: {
       id: `GTM-XXXX`,
     },
+    ga: {
+      id: `UA-XXXXX-Y`,
+    },
   },
 })
 
@@ -16,7 +19,7 @@ const displayAccepted = () => {
   dummyBtnEl.removeAttribute(`hidden`)
 
   responseEl.innerHTML = `
-    <p>Tracking accepted:</p>
+    <p>Tracking accepted. Here's the GTM data:</p>
     <pre style="white-space: pre-line;">
       ${JSON.stringify(tu.registeredGTMdata())}
     </pre>
@@ -48,7 +51,12 @@ dialogEl
     if (dialogEl.querySelector(`input[name="analytics"]`).checked)
       defaultGTMdataLayer.push({ event: `trackingCategory:analytics` })
 
-    tu.setTrackingAccepted(true, { defaultGTMdataLayer })
+    const defaultGAdata = [
+      [`set`, `anonymizeIp`, true],
+      [`send`, `pageview`],
+    ]
+
+    tu.setTrackingAccepted(true, { defaultGTMdataLayer, defaultGAdata })
 
     dialogEl.setAttribute(`hidden`, ``)
     displayAccepted()
@@ -65,10 +73,20 @@ dialogEl
 
 dummyBtnEl.addEventListener(`click`, () => {
   tu.registerGTMdata({
-    event: `buttonClick`,
+    event: `CTA`,
     eventCategory: `Homepage`,
     eventLabel: dummyBtnEl.innerText,
   })
+
+  tu.registerGAdata([
+    `send`,
+    `event`,
+    {
+      eventCategory: `Homepage`,
+      eventAction: `CTA`,
+      eventValue: dummyBtnEl.innerText,
+    },
+  ])
 
   displayAccepted()
 })
