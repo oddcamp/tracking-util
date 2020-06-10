@@ -13,6 +13,7 @@ class TrackingUtil {
 
     // Default options
     this.options = {
+      enabled: true,
       cookie: {
         name: `tracking-util-reacted`,
         options: {
@@ -133,6 +134,14 @@ class TrackingUtil {
   }
 
   /*
+   *
+   *
+   * GTM
+   *
+   *
+   */
+
+  /*
    * Checks if enough options provided to perform GTM tracking
    */
   isGTMtrackable() {
@@ -144,7 +153,11 @@ class TrackingUtil {
    * Initiates GTM tracking
    */
   initGTM() {
-    if (!this.isGTMtrackable() || !this.trackingAccepted()) {
+    if (
+      !this.options.enabled ||
+      !this.trackingAccepted() ||
+      !this.isGTMtrackable()
+    ) {
       return false
     }
 
@@ -178,14 +191,17 @@ class TrackingUtil {
    * @returns {bool} `true` on success and `false` on failure
    */
   registerGTMdata(data) {
-    const { dataLayerName } = this.options.services.gtm
-
     if (
-      !this.isGTMtrackable() ||
+      !this.options.enabled ||
       !this.trackingAccepted() ||
-      typeof data !== `object` ||
-      typeof window[dataLayerName] !== `object`
+      !this.isGTMtrackable() ||
+      typeof data !== `object`
     ) {
+      return false
+    }
+
+    const { dataLayerName } = this.options.services.gtm
+    if (!Array.isArray(window[dataLayerName])) {
       return false
     }
 
@@ -199,13 +215,29 @@ class TrackingUtil {
    * @returns {array}
    */
   registeredGTMdata() {
-    if (!this.isGTMtrackable()) {
-      return false
+    if (
+      !this.options.enabled ||
+      !this.trackingAccepted() ||
+      !this.isGTMtrackable()
+    ) {
+      return []
     }
 
     const { dataLayerName } = this.options.services.gtm
-    return window[dataLayerName] || []
+    if (!Array.isArray(window[dataLayerName])) {
+      return []
+    }
+
+    return window[dataLayerName]
   }
+
+  /*
+   *
+   *
+   * GA
+   *
+   *
+   */
 
   /*
    * Checks if enough options provided to perform GA tracking
@@ -219,7 +251,11 @@ class TrackingUtil {
    * Initiates GA tracking
    */
   initGA() {
-    if (!this.isGAtrackable() || !this.trackingAccepted()) {
+    if (
+      !this.options.enabled ||
+      !this.trackingAccepted() ||
+      !this.isGAtrackable()
+    ) {
       return false
     }
 
@@ -248,7 +284,7 @@ class TrackingUtil {
     )
     /* eslint-enable */
 
-    window[ga.commandQueue](`create`, ga.id, ga.createFields)
+    this.runGAcommand([`create`, ga.id, ga.createFields])
 
     if (Array.isArray(defaultGAcommands)) {
       defaultGAcommands.forEach((d) => this.runGAcommand(d))
@@ -260,17 +296,21 @@ class TrackingUtil {
   /*
    * Runs GA command
    *
-   * @param {array} data
+   * @param {array} data Command params
+   * @returns {bool} `true` on success and `false` on failure
    */
   runGAcommand(data) {
-    const { commandQueue } = this.options.services.ga
-
     if (
-      !this.isGAtrackable() ||
+      !this.options.enabled ||
       !this.trackingAccepted() ||
-      !Array.isArray(data) ||
-      typeof window[commandQueue] !== `function`
+      !this.isGAtrackable() ||
+      !Array.isArray(data)
     ) {
+      return false
+    }
+
+    const { commandQueue } = this.options.services.ga
+    if (typeof window[commandQueue] !== `function`) {
       return false
     }
 
