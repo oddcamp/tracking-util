@@ -81,6 +81,12 @@ document.querySelector(`a.logo`).addEventListener(`click`, () => {
 
 ```js
 {
+  /*
+    If `false` tracking scripts aren't inserted and no tracking is performed.
+    Useful if you need to disable tracking in `development` environment.
+  */
+  enabled: true,
+
   /* Cookie options */
   cookie: {
     name: `tracking-util-reacted`,
