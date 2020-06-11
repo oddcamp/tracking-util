@@ -40,7 +40,7 @@ if (!tu.userReacted()) {
 dialogEl
   .querySelector(`button[data-type="accept"]`)
   .addEventListener(`click`, () => {
-    const defaultGTMdataLayer = [{ pageTitle: `Home` }, { event: `pageView` }]
+    const defaultGTMdataLayer = [{ pageTitle: `Home` }, { event: `pageview` }]
 
     if (dialogEl.querySelector(`input[name="performance"]`).checked)
       defaultGTMdataLayer.push({ event: `trackingCategory:performance` })

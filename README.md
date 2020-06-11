@@ -7,7 +7,19 @@ GDPR compliant tracking.
 - Google Tag Manager (GTM)
 - Google Analytics (GA)
 
-## Example code
+## Example codes
+
+### Usual workflow
+
+```html
+  <div class="consent-dialog" hidden>
+    <p>Do you wanna get tracked?</p>
+    <p>
+      <button type="button" data-type="accept">Accept</button>
+      <button type="button" data-type="deny">Deny</button>
+    </p>
+  </div>
+```
 
 ```js
 import TrackingUtil from "@kollegorna/tracking-util"
@@ -25,32 +37,40 @@ const tu = new TrackingUtil({
   },
 })
 
+const dialogEl = document.querySelector(`.consent-dialog`)
+
 // Displays cookie consent dialog if user hasn't already made a decision
 if (tu.userReacted()) {
-  document.querySelector(`.consent-dialog`).removeAttribute(`hidden`)
+  dialogEl.removeAttribute(`hidden`)
 }
 
 // Sets tracking accepted on button click
-document
-  .querySelector(`.consent-dialog button[data-type="accept"]`)
+dialogEl
+  .querySelector(`button[data-type="accept"]`)
   .addEventListener(`click`, () => {
     tu.setTrackingAccepted(true, {
       defaultGTMdataLayer: [
         { pageTitle: `Home` },
-        { event: `pageView` },
+        { event: `pageview` },
       ],
       defaultGAcommands: [
         [`set`, `anonymizeIp`, true],
         [`send`, `pageview`],
       ],
     })
+    dialogEl.setAttribute(`hidden`, ``) // Hides the dialog
   })
 
 // Sets tracking denied on button click
-document
-  .querySelector(`.consent-dialog button[data-type="deny"]`)
-  .addEventListener(`click`, () => tu.setTrackingAccepted(false))
+dialogEl
+  .querySelector(`button[data-type="deny"]`)
+  .addEventListener(`click`, () => {
+    tu.setTrackingAccepted(false)
+    dialogEl.setAttribute(`hidden`, ``) // Hides the dialog
+  })
 ```
+
+### Tracking clicks
 
 Once `TrackingUtil` instance is created it also becomes accessible via
 `window.trackingUtil`, e.g.:
@@ -75,6 +95,44 @@ document.querySelector(`a.logo`).addEventListener(`click`, () => {
     ])
   }
 })
+```
+
+### Tracking categories with Google Tag Manager
+
+You may want to allow the user to choose how advanced tracking they are fine
+with:
+
+```html
+<div class="consent-dialog" hidden>
+  <!-- ... -->
+  <label><input type="checkbox" name="performance" /> Performance</label>
+  <label><input type="checkbox" name="marketing" /> Marketing</label>
+  <label><input type="checkbox" name="analytics" /> Analytics</label>
+  <!-- ... -->
+</div>
+```
+
+```js
+// ...
+dialogEl
+  .querySelector(`button[data-type="accept"]`)
+  .addEventListener(`click`, () => {
+    const defaultGTMdataLayer = [{ event: `pageview` }]
+
+    if (dialogEl.querySelector(`input[name="performance"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:performance` })
+
+    if (dialogEl.querySelector(`input[name="marketing"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:marketing` })
+
+    if (dialogEl.querySelector(`input[name="analytics"]`).checked)
+      defaultGTMdataLayer.push({ event: `trackingCategory:analytics` })
+
+    tu.setTrackingAccepted(true, { defaultGTMdataLayer })
+
+    dialogEl.setAttribute(`hidden`, ``)
+  })
+// ...
 ```
 
 ## Default options
@@ -217,6 +275,6 @@ Doesn't do anything if tracking hasn't been accepted by user.
 
 ## TODO
 
-- [ ] Implement async callback functions, e.g.: `initCb()`.
+- [ ] Support functions in `defaultGTMdataLayer` and `defaultGAcommands`
 - [ ] Support multiple trackers
 - [x] Support Google Analytics
