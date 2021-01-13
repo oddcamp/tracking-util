@@ -1,7 +1,7 @@
 {
   "name": "@oddcamp/tracking-util",
   "description": "GDPR compliant tracking",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "author": "Odd Camp <hello@oddcamp.com>",
   "license": "MIT",
   "private": false,
