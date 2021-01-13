@@ -1,4 +1,4 @@
-# Kollegorna Tracking Utility
+# Odd Camp Tracking Utility
 
 GDPR compliant tracking.
 
@@ -12,17 +12,17 @@ GDPR compliant tracking.
 ### Usual workflow
 
 ```html
-  <div class="consent-dialog" hidden>
-    <p>Do you wanna get tracked?</p>
-    <p>
-      <button type="button" data-type="accept">Accept</button>
-      <button type="button" data-type="deny">Deny</button>
-    </p>
-  </div>
+<div class="consent-dialog" hidden>
+  <p>Do you wanna get tracked?</p>
+  <p>
+    <button type="button" data-type="accept">Accept</button>
+    <button type="button" data-type="deny">Deny</button>
+  </p>
+</div>
 ```
 
 ```js
-import TrackingUtil from "@kollegorna/tracking-util"
+import TrackingUtil from "@oddcamp/tracking-util"
 
 // Initiates util, automatically inserts scripts and starts tracking if tracking
 // has been previously accepted by user
@@ -33,7 +33,7 @@ const tu = new TrackingUtil({
     },
     ga: {
       id: `UA-XXXXX-Y`,
-    }
+    },
   },
 })
 
@@ -49,10 +49,7 @@ dialogEl
   .querySelector(`button[data-type="accept"]`)
   .addEventListener(`click`, () => {
     tu.setTrackingAccepted(true, {
-      defaultGTMdataLayer: [
-        { pageTitle: `Home` },
-        { event: `pageview` },
-      ],
+      defaultGTMdataLayer: [{ pageTitle: `Home` }, { event: `pageview` }],
       defaultGAcommands: [
         [`set`, `anonymizeIp`, true],
         [`send`, `pageview`],
@@ -200,66 +197,76 @@ dialogEl
 
 ```js
 /*
-* Checks if user has made a decision to allow or deny tracking
-* @returns {bool}
-*/
+ * Checks if user has made a decision to allow or deny tracking
+ * @returns {bool}
+ */
 userReacted()
 ```
+
 ---
+
 ```js
 /*
-* Checks if tracking has been accepted by user
-* @returns {bool}
-*/
+ * Checks if tracking has been accepted by user
+ * @returns {bool}
+ */
 trackingAccepted()
 ```
+
 ---
+
 ```js
 /*
-* Sets tracking decision and starts tracking if accepted
-*
-* @param {bool} value `true` if accepted, `false` if denied
-* @param {object} options 
-*   @param defaultGTMdataLayer {array} Default GTM data layer
-*   @param defaultGAcommands {array} Default GA data
-*/
-setTrackingAccepted(value, options = {})
+ * Sets tracking decision and starts tracking if accepted
+ *
+ * @param {bool} value `true` if accepted, `false` if denied
+ * @param {object} options
+ *   @param defaultGTMdataLayer {array} Default GTM data layer
+ *   @param defaultGAcommands {array} Default GA data
+ */
+setTrackingAccepted(value, (options = {}))
 ```
-If tracking was accepted by user the `defaultGTMdataLayer/defaultGAcommands` are 
-saved in a cookie (Options → `cookie.name`) and the data is automatically 
-injected in GTM's data layer every time `TrackingUtil` instance is created. 
-Therefore it's useful for tracking page views and storing other default 
+
+If tracking was accepted by user the `defaultGTMdataLayer/defaultGAcommands` are
+saved in a cookie (Options → `cookie.name`) and the data is automatically
+injected in GTM's data layer every time `TrackingUtil` instance is created.
+Therefore it's useful for tracking page views and storing other default
 information. Check out `/example` for demo.
 
 ---
+
 ```js
 /*
-* Registers GTM data
-*
-* @param {object} data
-* @returns {bool} `true` on success and `false` on failure
-*/
+ * Registers GTM data
+ *
+ * @param {object} data
+ * @returns {bool} `true` on success and `false` on failure
+ */
 registerGTMdata(data)
 
 // e.g.: registerGTMdata({ event: `click` })
 ```
+
 Doesn't do anything if tracking hasn't been accepted by user.
 
 ---
+
 ```js
 /*
-* Gets registered GTM data
-* @returns {array}
-*/
+ * Gets registered GTM data
+ * @returns {array}
+ */
 registeredGTMdata()
 ```
+
 ---
+
 ```js
 /*
-* Registers GA data
-*
-* @param {array} data
-*/
+ * Registers GA data
+ *
+ * @param {array} data
+ */
 runGAcommand(data)
 
 // e.g.: runGAcommand([`send`, `event`, `click`, `download-me`, { transport: `beacon` }])
@@ -267,6 +274,7 @@ runGAcommand(data)
 // All options available at
 //   https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#general
 ```
+
 Doesn't do anything if tracking hasn't been accepted by user.
 
 ## Local development and testing
